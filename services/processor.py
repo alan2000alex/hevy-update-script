@@ -33,9 +33,12 @@ def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, l
     changes: list[ChangeRecord] = []
     updated_exercises = []
 
+    _exercise_ro = {"index", "id", "title"}
+    _set_ro = {"index", "id"}
+
     for exercise in workout.get("exercises", []):
         if not is_dumbbell_exercise(exercise):
-            updated_exercises.append(exercise)
+            updated_exercises.append({k: v for k, v in exercise.items() if k not in _exercise_ro})
             continue
 
         updated_sets = []
@@ -43,7 +46,7 @@ def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, l
             old_w = s.get("weight_kg")
 
             if old_w is None or not isinstance(old_w, (int, float)):
-                updated_sets.append(s)
+                updated_sets.append({k: v for k, v in s.items() if k not in _set_ro})
                 changes.append(
                     ChangeRecord(
                         workout_id=workout["id"],
@@ -59,7 +62,7 @@ def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, l
             new_w = transform_weight(old_w, mode)
 
             if new_w == old_w:
-                updated_sets.append(s)
+                updated_sets.append({k: v for k, v in s.items() if k not in _set_ro})
                 changes.append(
                     ChangeRecord(
                         workout_id=workout["id"],
@@ -82,9 +85,9 @@ def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, l
                     status="modified",
                 )
             )
-            updated_sets.append({**s, "weight_kg": new_w})
+            updated_sets.append({k: v for k, v in s.items() if k not in _set_ro} | {"weight_kg": new_w})
 
-        updated_exercises.append({**exercise, "sets": updated_sets})
+        updated_exercises.append({k: v for k, v in exercise.items() if k not in _exercise_ro} | {"sets": updated_sets})
 
     return {**workout, "exercises": updated_exercises}, changes
 
