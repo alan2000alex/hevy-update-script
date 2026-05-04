@@ -29,7 +29,7 @@ class ProcessResult:
     changes: list[ChangeRecord] = field(default_factory=list)
 
 
-def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, list[ChangeRecord]]:
+def _build_updated_workout(workout: dict, mode: CorrectionMode, client: HevyClient) -> tuple[dict, list[ChangeRecord]]:
     changes: list[ChangeRecord] = []
     updated_exercises = []
 
@@ -37,7 +37,9 @@ def _build_updated_workout(workout: dict, mode: CorrectionMode) -> tuple[dict, l
     _set_ro = {"index", "id"}
 
     for exercise in workout.get("exercises", []):
-        if not is_dumbbell_exercise(exercise):
+        template_id = exercise.get("exercise_template_id")
+        template = client.get_exercise_template(template_id) if template_id else None
+        if not is_dumbbell_exercise(exercise, template):
             updated_exercises.append({k: v for k, v in exercise.items() if k not in _exercise_ro})
             continue
 
@@ -104,7 +106,7 @@ def process(client: HevyClient, mode: CorrectionMode, dry_run: bool) -> ProcessR
         logger.info(f"Backup saved → {result.backup_path}")
 
     for workout in all_workouts:
-        updated_workout, changes = _build_updated_workout(workout, mode)
+        updated_workout, changes = _build_updated_workout(workout, mode, client)
 
         modified = [c for c in changes if c.status == "modified"]
         skipped = [c for c in changes if c.status != "modified"]

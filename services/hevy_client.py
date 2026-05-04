@@ -86,6 +86,10 @@ class HevyClient:
             page += 1
             logger.info(f"Fetched page {page - 1}/{data.get('page_count', 1)}")
 
+
+    def get_exercise_template(self, template_id: str) -> dict:
+        return self._get(f"/v1/exercise_templates/{template_id}")
+
     def update_workout(self, workout_id: str, workout: dict) -> dict:
         body = {
             "workout": {
