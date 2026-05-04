@@ -102,3 +102,14 @@ Logs are written to `data/logs/hevy_update.log`. Each modified set is recorded w
 - A full backup is saved before any API writes occur.
 - The tool only modifies detected dumbbell exercises; all other exercises are passed through unchanged.
 - API requests retry up to 3 times with exponential backoff on rate limits and transient errors.
+
+## Planned Features
+
+### Workout Selection
+- Select a single workout by ID to modify only that workout.
+- Select workouts in a date range (`--from`/`--to` flags) instead of processing all workouts.
+- Select the N most recent workouts (`--last N`).
+- Select workouts by exercise name (e.g. only workouts that contain a specific exercise).
+
+### Performance
+- Cache exercise template GET responses so each template is fetched at most once per run, rather than re-fetched for every workout that contains it.
